@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabaseClient';
+import { getClientIp, isRateLimited } from '../../../../lib/security';
 
 export async function GET(_req: NextRequest) {
+  const ip = getClientIp(_req);
+  const rateKey = `kitchen-list:${ip}`;
+  if (isRateLimited(rateKey, { windowMs: 10_000, max: 30 })) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please slow down.' },
+      { status: 429 }
+    );
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .select(
@@ -27,7 +37,7 @@ export async function GET(_req: NextRequest) {
         )
       `
     )
-    .neq('status', 'delivered')
+    .neq('status', 'paid')
     .order('created_at', { ascending: false });
 
   if (error) {

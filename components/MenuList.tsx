@@ -1,14 +1,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { MenuItem, CartItem } from '../types';
+import Image from 'next/image';
+import type { MenuItem, CartItem, Language } from '../types';
 
 type Props = {
   menuItems: MenuItem[];
   onAddToCart: (item: CartItem) => void;
+  language: Language;
 };
 
-export default function MenuList({ menuItems, onAddToCart }: Props) {
+export default function MenuList({ menuItems, onAddToCart, language }: Props) {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [activeCategory, setActiveCategory] = useState<string>('Όλα');
@@ -83,50 +85,67 @@ export default function MenuList({ menuItems, onAddToCart }: Props) {
             key={item.id}
             className="bg-white rounded-lg shadow-sm p-3 flex flex-col gap-2"
           >
-            <div className="flex justify-between items-start gap-2">
-              <div className="space-y-1">
-                <div className="text-sm font-semibold leading-tight">
-                  {item.name}
+            <div className="flex items-start gap-3">
+              {item.image_url && (
+                <div className="shrink-0">
+                  <Image
+                    src={item.image_url}
+                    alt={item.name}
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 rounded-md object-cover"
+                  />
                 </div>
-                {item.description && (
-                  <p className="text-xs text-gray-600 line-clamp-3">
-                    {item.description}
-                  </p>
-                )}
-              </div>
-              <div className="text-sm font-semibold text-green-700 shrink-0">
-                €{item.price.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <label className="text-xs flex items-center">
-                Qty:
-                <input
-                  type="number"
-                  min={1}
-                  value={quantities[item.id] ?? 1}
-                  onChange={(e) =>
-                    handleQuantityChange(item.id, Number(e.target.value))
+              )}
+              <div className="flex-1 flex flex-col gap-2">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="space-y-1">
+                    <div className="text-sm font-semibold leading-tight">
+                      {item.name}
+                    </div>
+                    {item.description && (
+                      <p className="text-xs text-gray-600 line-clamp-3">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-sm font-semibold text-green-700 shrink-0">
+                    €{item.price.toFixed(2)}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-xs flex items-center">
+                    {language === 'el' ? 'Ποσότητα:' : 'Qty:'}
+                    <input
+                      type="number"
+                      min={1}
+                      value={quantities[item.id] ?? 1}
+                      onChange={(e) =>
+                        handleQuantityChange(item.id, Number(e.target.value))
+                      }
+                      className="ml-2 w-14 rounded border border-gray-300 px-1 py-1 text-xs"
+                    />
+                  </label>
+                  <button
+                    onClick={() => handleAdd(item)}
+                    className="inline-flex justify-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700"
+                  >
+                    {language === 'el' ? 'Προσθήκη' : 'Add'}
+                  </button>
+                </div>
+                <textarea
+                  placeholder={
+                    language === 'el'
+                      ? 'Σημείωση (προαιρετικό)'
+                      : 'Note (optional)'
                   }
-                  className="ml-2 w-14 rounded border border-gray-300 px-1 py-1 text-xs"
+                  value={notes[item.id] ?? ''}
+                  onChange={(e) => handleNoteChange(item.id, e.target.value)}
+                  className="w-full rounded border border-gray-200 px-2 py-1 text-xs"
+                  rows={2}
                 />
-              </label>
-              <button
-                onClick={() => handleAdd(item)}
-                className="inline-flex justify-center rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700"
-              >
-                Add
-              </button>
+              </div>
             </div>
-
-            <textarea
-              placeholder="Note (optional)"
-              value={notes[item.id] ?? ''}
-              onChange={(e) => handleNoteChange(item.id, e.target.value)}
-              className="w-full rounded border border-gray-200 px-2 py-1 text-xs"
-              rows={2}
-            />
           </div>
         ))}
       </div>

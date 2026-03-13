@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../../lib/supabaseClient';
+import { getClientIp, isRateLimited } from '../../../../../lib/security';
 
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const ip = getClientIp(req);
+  const rateKey = `kitchen-status:${ip}`;
+  if (isRateLimited(rateKey, { windowMs: 5_000, max: 50 })) {
+    return NextResponse.json(
+      { error: 'Too many status updates. Please slow down.' },
+      { status: 429 }
+    );
+  }
+
   const { id: idParam } = await context.params;
   const id = Number(idParam);
   if (Number.isNaN(id)) {
@@ -17,6 +27,8 @@ export async function PATCH(
     | 'preparing'
     | 'ready'
     | 'delivered'
+    | 'waiting_for_pay'
+    | 'paid'
     | undefined;
 
   if (!status) {

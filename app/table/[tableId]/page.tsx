@@ -13,9 +13,9 @@ export default async function TablePage({ params }: PageProps) {
   if (Number.isNaN(tableId)) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Invalid table</h1>
+        <h1 className="text-2xl font-semibold">Μη έγκυρο τραπέζι</h1>
         <p className="text-gray-600">
-          The table number in the URL is not valid.
+          Ο αριθμός τραπεζιού στο URL δεν είναι έγκυρος.
         </p>
       </div>
     );
@@ -31,27 +31,19 @@ export default async function TablePage({ params }: PageProps) {
   if (error || !menuItems) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Menu unavailable</h1>
+        <h1 className="text-2xl font-semibold">Το μενού δεν είναι διαθέσιμο</h1>
         <p className="text-gray-600">
-          Sorry, we could not load the menu right now. Please call a waiter.
+          Δεν ήταν δυνατή η φόρτωση του μενού αυτή τη στιγμή. Παρακαλούμε καλέστε έναν σερβιτόρο.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Table {tableId}</h1>
-        <p className="text-gray-600 text-sm">
-          Welcome! Browse the menu and place your order.
-        </p>
-      </div>
-      <ClientCartWrapper
-        tableId={tableId}
-        menuItems={menuItems as MenuItem[]}
-      />
-    </div>
+    <ClientCartWrapper
+      tableId={tableId}
+      menuItems={menuItems as MenuItem[]}
+    />
   );
 }
 

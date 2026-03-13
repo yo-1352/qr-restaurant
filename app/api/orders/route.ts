@@ -1,18 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabaseClient';
+import { getClientIp, isRateLimited, sanitizeNote } from '../../../lib/security';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const tableId = Number(body.tableId);
-    const paymentMethod = body.paymentMethod as 'cash' | 'card' | undefined;
-    const items = body.items as
-      | { menuItemId: number; quantity: number; note?: string }[]
-      | undefined;
+    const ip = getClientIp(req);
+    const rateKey = `orders:${ip}`;
+    if (isRateLimited(rateKey, { windowMs: 60_000, max: 20 })) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait a moment and try again.' },
+        { status: 429 }
+      );
+    }
 
-    if (!tableId || !items || items.length === 0) {
+    const body = await req.json().catch(() => null);
+
+    if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
+
+    const tableIdRaw = (body as any).tableId;
+    const paymentMethodRaw = (body as any).paymentMethod;
+    const itemsRaw = (body as any).items;
+
+    const tableId = Number(tableIdRaw);
+    const paymentMethod =
+      paymentMethodRaw === 'card' ? 'card' : ('cash' as 'cash' | 'card');
+
+    if (!Number.isInteger(tableId) || tableId <= 0) {
+      return NextResponse.json({ error: 'Invalid table id' }, { status: 400 });
+    }
+
+    if (!Array.isArray(itemsRaw) || itemsRaw.length === 0) {
+      return NextResponse.json({ error: 'Invalid items' }, { status: 400 });
+    }
+
+    const items = itemsRaw.map((item: any) => {
+      const menuItemId = Number(item?.menuItemId);
+      const quantity = Number(item?.quantity);
+      const note = sanitizeNote(item?.note);
+      if (!Number.isInteger(menuItemId) || menuItemId <= 0) {
+        throw new Error('Invalid menu item');
+      }
+      if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 100) {
+        throw new Error('Invalid quantity');
+      }
+      return { menuItemId, quantity, note };
+    });
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -36,7 +70,7 @@ export async function POST(req: NextRequest) {
       order_id: order.id,
       menu_item_id: item.menuItemId,
       quantity: item.quantity,
-      note: item.note || null,
+      note: item.note,
     }));
 
     const { error: itemsError } = await supabase

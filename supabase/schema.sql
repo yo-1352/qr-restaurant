@@ -13,7 +13,8 @@ create table if not exists public.menu_items (
   description text,
   price numeric(10, 2) not null,
   category text,
-  is_available boolean not null default true
+  is_available boolean not null default true,
+  image_url text
 );
 
 create table if not exists public.orders (

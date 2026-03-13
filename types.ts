@@ -5,6 +5,7 @@ export type MenuItem = {
   price: number;
   category: string | null;
   is_available: boolean;
+  image_url?: string | null;
 };
 
 export type CartItem = {
@@ -13,7 +14,13 @@ export type CartItem = {
   note: string;
 };
 
-export type OrderStatus = 'new' | 'preparing' | 'ready' | 'delivered';
+export type OrderStatus =
+  | 'new'
+  | 'preparing'
+  | 'ready'
+  | 'delivered'
+  | 'waiting_for_pay'
+  | 'paid';
 
 export type OrderWithItems = {
   id: number;
@@ -29,4 +36,6 @@ export type OrderWithItems = {
     menu_item: MenuItem;
   }[];
 };
+
+export type Language = 'el' | 'en';
 

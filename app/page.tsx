@@ -1,10 +1,9 @@
 export default function Home() {
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">QR Restaurant Ordering</h1>
+      <h1 className="text-2xl font-semibold">Περίγυρος</h1>
       <p className="text-gray-600 text-sm">
-        This is a demo MVP where customers scan a QR code at their table and
-        place orders that appear in real time on a kitchen dashboard.
+        Σκανάρετε το QR code στο τραπέζι σας και κάντε την παραγγελία σας. Οι παραγγελίες εμφανίζονται σε πραγματικό χρόνο στην κουζίνα.
       </p>
       <div className="space-y-2 text-sm">
         <p>
